@@ -17,6 +17,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn import metrics
 from math import sqrt
+from os.path import isfile
 
 # flags
 tf.flags.DEFINE_float("epsilon", 0.1, "Epsilon value for Adam Optimizer.")
@@ -304,7 +305,13 @@ def main(unused_args):
                               for g, v in grads_and_vars if g is not None]
             grads_and_vars = [(add_gradient_noise(g), v) for g, v in grads_and_vars]
             train_op = optimizer.apply_gradients(grads_and_vars, name="train_op", global_step=global_step)
-            session.run(tf.initialize_all_variables())
+            saver = tf.train.Saver(tf.all_variables())
+
+            if isfile(model_name):
+                saver.restore(session, model_name)
+            else:
+                session.run(tf.initialize_all_variables())
+
             # log hyperparameters to results file
             with open(result_file_path, "a+") as f:
                 print("Writing hyperparameters into file")
@@ -312,7 +319,6 @@ def main(unused_args):
                 f.write("Dropout rate: %.3f \n" % (FLAGS.keep_prob))
                 f.write("Batch size: %d \n" % (FLAGS.batch_size))
                 f.write("Max grad norm: %d \n" % (FLAGS.max_grad_norm))
-            saver = tf.train.Saver(tf.all_variables())
 
             for i in range(config.max_max_epoch):
                 rmse, auc, r2, _ = run_epoch(session, m, train_students, train_op, verbose=False)
