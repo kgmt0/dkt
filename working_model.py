@@ -128,7 +128,7 @@ class StudentModel(object):
         self._pred = tf.sigmoid(selected_logits)
 
         # loss function
-        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(selected_logits, target_correctness))
+        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=selected_logits, labels=target_correctness))
 
         #self._cost = cost = tf.reduce_mean(loss)
         self._cost = cost = loss
