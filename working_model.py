@@ -49,7 +49,6 @@ tf.flags.DEFINE_string("train_data_path", 'data/0910_b_train.csv', "Path to the 
 tf.flags.DEFINE_string("test_data_path", 'data/0910_b_test.csv', "Path to the testing dataset")
 
 FLAGS = tf.flags.FLAGS
-FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
