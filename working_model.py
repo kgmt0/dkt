@@ -112,7 +112,7 @@ class StudentModel(object):
         x = tf.split(x, num_steps, 0)
         #inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, num_steps, inputs)]
         #outputs, state = tf.nn.rnn(hidden1, x, dtype=tf.float32)
-        outputs, state = tf.nn.rnn(cell, x, dtype=tf.float32)
+        outputs, state = tf.nn.static_rnn(cell, x, dtype=tf.float32)
         output = tf.reshape(tf.concat(outputs, 1), [-1, final_hidden_size])
         # calculate the logits from last hidden layer to output layer
         sigmoid_w = tf.get_variable("sigmoid_w", [final_hidden_size, num_skills])
