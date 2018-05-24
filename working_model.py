@@ -98,7 +98,7 @@ class StudentModel(object):
         with tf.device("/cpu:0"):
             labels = tf.expand_dims(input_data, 1)
             indices = tf.expand_dims(tf.range(0, batch_size*num_steps, 1), 1)
-            concated = tf.concat(1, [indices, labels])
+            concated = tf.concat([indices, labels], 1)
             inputs = tf.sparse_to_dense(concated, tf.pack([batch_size*num_steps, input_size]), 1.0, 0.0)
             inputs.set_shape([batch_size*num_steps, input_size])
 
@@ -113,7 +113,7 @@ class StudentModel(object):
         #inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, num_steps, inputs)]
         #outputs, state = tf.nn.rnn(hidden1, x, dtype=tf.float32)
         outputs, state = tf.nn.rnn(cell, x, dtype=tf.float32)
-        output = tf.reshape(tf.concat(1, outputs), [-1, final_hidden_size])
+        output = tf.reshape(tf.concat(outputs, 1), [-1, final_hidden_size])
         # calculate the logits from last hidden layer to output layer
         sigmoid_w = tf.get_variable("sigmoid_w", [final_hidden_size, num_skills])
         sigmoid_b = tf.get_variable("sigmoid_b", [num_skills])
