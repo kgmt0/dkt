@@ -180,14 +180,19 @@ def run_epoch(session, m, students, eval_op, verbose=False):
     actual_labels = []
     all_all_logits = []
     while(index+m.batch_size < len(students)):
-        x = np.zeros((m.batch_size, m.num_steps))
+        x = np.zeros((m.batch_size, m.num_steps,5))
         target_id = []
         target_correctness = []
         count = 0
         for i in range(m.batch_size):
             student = students[index+i]
-            problem_ids = student[1]
-            correctness = student[2]
+            correctness = student[1]
+            problem_ids = student[2] #this is getting deleted at some point
+            playbackspeed = student[2]
+            pauses = student[3]
+            seeks_back = student[4]
+            seeks_forward = student[5]
+            video_completion = student[6]
             for j in range(len(problem_ids)-1):
                 problem_id = int(problem_ids[j])
                 label_index = 0
@@ -195,8 +200,12 @@ def run_epoch(session, m, students, eval_op, verbose=False):
                     label_index = problem_id
                 else:
                     label_index = problem_id + m.num_skills
-                x[i, j] = label_index
-                target_id.append(i*m.num_steps*m.num_skills+j*m.num_skills+int(problem_ids[j+1]))
+                x[i, j, 0] = playbackspeed
+                x[i, j, 1] = pauses
+                x[i, j, 2] = seeks_back
+                x[i, j, 3] = seeks_forward
+                x[i, j, 4] = video_completion
+                target_id.append(i*m.num_steps*m.num_skills+j*m.num_skills+int(problem_ids[j+1]))  # i'm not really sure what the purpose of this target_id is?
                 target_correctness.append(int(correctness[j+1]))
                 actual_labels.append(int(correctness[j+1]))
 
@@ -242,13 +251,13 @@ def read_data_from_csv_file(fileName, shuffle=False):
         if(tmp_max_skill > max_skill_num):
             max_skill_num = tmp_max_skill
         if(problems_num <= 2):
-            index += 3
+            index += 7  #increase to accomodate additional entries in tuple
         else:
             if problems_num > max_num_problems:
                 max_num_problems = problems_num
-            tup = (rows[index], rows[index+1], rows[index+2])
+            tup = (rows[index], rows[index+1], rows[index+2], rows[index+3], rows[index+4], rows[index+5], rows[index+6])  #increase size of tuple
             tuple_rows.append(tup)
-            index += 3
+            index += 7  #increase to accomodate additional entries in tuple
     #shuffle the tuple
 
     if shuffle:
@@ -272,10 +281,10 @@ def main(unused_args):
     train_students, train_max_num_problems, train_max_skill_num = read_data_from_csv_file(train_data_path, shuffle=True)
     config.num_steps = train_max_num_problems
 
-    config.num_skills = train_max_skill_num
+    config.num_skills = train_max_skill_num #consider removing/changing this parameter
     test_students, test_max_num_problems, test_max_skill_num = read_data_from_csv_file(test_data_path, shuffle=False)
     eval_config.num_steps = test_max_num_problems
-    eval_config.num_skills = test_max_skill_num
+    eval_config.num_skills = test_max_skill_num #consider removing/changing this parameter
     print 'test_max_num_problems=%d, test_max_skill_num=%d' % (test_max_num_problems, test_max_skill_num)
 
     with tf.Graph().as_default():
