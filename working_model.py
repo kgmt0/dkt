@@ -49,7 +49,6 @@ tf.flags.DEFINE_string("train_data_path", 'data/0910_b_train.csv', "Path to the 
 tf.flags.DEFINE_string("test_data_path", 'data/0910_b_test.csv', "Path to the testing dataset")
 
 FLAGS = tf.flags.FLAGS
-FLAGS._parse_flags()
 print("\nParameters:")
 for attr, value in sorted(FLAGS.__flags.items()):
     print("{}={}".format(attr.upper(), value))
@@ -99,8 +98,8 @@ class StudentModel(object):
         with tf.device("/cpu:0"):
             labels = tf.expand_dims(input_data, 1)
             indices = tf.expand_dims(tf.range(0, batch_size*num_steps, 1), 1)
-            concated = tf.concat(1, [indices, labels])
-            inputs = tf.sparse_to_dense(concated, tf.pack([batch_size*num_steps, input_size]), 1.0, 0.0)
+            concated = tf.concat([indices, labels], 1)
+            inputs = tf.sparse_to_dense(concated, tf.stack([batch_size*num_steps, input_size]), 1.0, 0.0)
             inputs.set_shape([batch_size*num_steps, input_size])
 
         # [batch_size, num_steps, input_size]
@@ -110,11 +109,11 @@ class StudentModel(object):
         x = tf.reshape(x, [-1, input_size])
         # Split to get a list of 'n_steps'
         # tensors of shape (doc_num, n_input)
-        x = tf.split(0, num_steps, x)
+        x = tf.split(x, num_steps, 0)
         #inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, num_steps, inputs)]
         #outputs, state = tf.nn.rnn(hidden1, x, dtype=tf.float32)
-        outputs, state = tf.nn.rnn(cell, x, dtype=tf.float32)
-        output = tf.reshape(tf.concat(1, outputs), [-1, final_hidden_size])
+        outputs, state = tf.nn.static_rnn(cell, x, dtype=tf.float32)
+        output = tf.reshape(tf.concat(outputs, 1), [-1, final_hidden_size])
         # calculate the logits from last hidden layer to output layer
         sigmoid_w = tf.get_variable("sigmoid_w", [final_hidden_size, num_skills])
         sigmoid_b = tf.get_variable("sigmoid_b", [num_skills])
@@ -129,7 +128,7 @@ class StudentModel(object):
         self._pred = tf.sigmoid(selected_logits)
 
         # loss function
-        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(selected_logits, target_correctness))
+        loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=selected_logits, labels=target_correctness))
 
         #self._cost = cost = tf.reduce_mean(loss)
         self._cost = cost = loss
