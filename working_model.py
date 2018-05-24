@@ -99,7 +99,7 @@ class StudentModel(object):
             labels = tf.expand_dims(input_data, 1)
             indices = tf.expand_dims(tf.range(0, batch_size*num_steps, 1), 1)
             concated = tf.concat([indices, labels], 1)
-            inputs = tf.sparse_to_dense(concated, tf.pack([batch_size*num_steps, input_size]), 1.0, 0.0)
+            inputs = tf.sparse_to_dense(concated, tf.stack([batch_size*num_steps, input_size]), 1.0, 0.0)
             inputs.set_shape([batch_size*num_steps, input_size])
 
         # [batch_size, num_steps, input_size]
