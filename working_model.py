@@ -109,7 +109,7 @@ class StudentModel(object):
         x = tf.reshape(x, [-1, input_size])
         # Split to get a list of 'n_steps'
         # tensors of shape (doc_num, n_input)
-        x = tf.split(0, num_steps, x)
+        x = tf.split(x, num_steps, 0)
         #inputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, num_steps, inputs)]
         #outputs, state = tf.nn.rnn(hidden1, x, dtype=tf.float32)
         outputs, state = tf.nn.rnn(cell, x, dtype=tf.float32)
