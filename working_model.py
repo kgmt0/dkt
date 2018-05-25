@@ -129,6 +129,7 @@ class StudentModel(object):
 
         # loss function
         loss = tf.reduce_sum(tf.nn.sigmoid_cross_entropy_with_logits(logits=selected_logits, labels=target_correctness))
+        loss += tf.add_n([FLAGS.l2_lambda*tf.nn.l2_loss(v) for v in tf.trainable_variables() if 'bias' not in v.name])
 
         #self._cost = cost = tf.reduce_mean(loss)
         self._cost = cost = loss
