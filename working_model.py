@@ -287,7 +287,7 @@ def main(unused_args):
     #the file to store your test results
     result_file_path = "run_logs_{}".format(timestamp)
     #your model name
-    model_name = "DKT"
+    checkpoint_file = "./dkt.vars"
 
     train_students, train_max_num_problems, train_max_skill_num = read_data_from_csv_file(train_data_path, shuffle=True)
     config.num_steps = train_max_num_problems
@@ -327,8 +327,8 @@ def main(unused_args):
             train_op = optimizer.apply_gradients(grads_and_vars, name="train_op", global_step=global_step)
             saver = tf.train.Saver(tf.all_variables())
 
-            if isfile(model_name):
-                saver.restore(session, model_name)
+            if isfile(checkpoint_file):
+                saver.restore(session, checkpoint_file)
             else:
                 session.run(tf.initialize_all_variables())
 
@@ -346,7 +346,7 @@ def main(unused_args):
 
                 if((i+1) % FLAGS.evaluation_interval == 0):
                     print "Save variables to disk"
-                    save_path = saver.save(session, model_name)
+                    save_path = saver.save(session, checkpoint_file)
                     print("*"*10)
                     print("Start to test model....")
                     rmse, auc, r2, all_logits = run_epoch(session, mtest, test_students, tf.no_op(), verbose=True)
